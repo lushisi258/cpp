@@ -1,7 +1,10 @@
 # 忽略所有文件
 *
 
-# 不忽略 .gitignore 文件（这是必要的，否则 .gitignore 文件也会被忽略）
+# 不忽略目录
+!*/
+
+# 不忽略 .gitignore 文件
 !.gitignore
 
 # 不忽略所有 .cpp 文件
