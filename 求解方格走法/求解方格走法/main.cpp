@@ -6,14 +6,14 @@ using namespace std;
 class CalculateWays {
 public:
 	CalculateWays() {}
-	// ³õÊ¼»¯¾ØÕó
+	// åˆå§‹åŒ–çŸ©é˜µ
 	void make_matrix(int n, int m) {
 		Result = vector<vector<int>>(n + 1, vector<int>(m + 1, 0));
 		Result[1][1] = 1;
 	}
-	// ¼ÆËã×ß·¨
+	// è®¡ç®—èµ°æ³•
 	int calculate(int n, int m) {
-		// Èç¹ûÒÑ¾­½â¾ö¹ı×ÓÎÊÌâ£¬Ö±½Ó·µ»Ø½á¹û
+		// å¦‚æœå·²ç»è§£å†³è¿‡å­é—®é¢˜ï¼Œç›´æ¥è¿”å›ç»“æœ
 		if (Result[n][m] != 0) {
 			return Result[n][m];
 		}
@@ -44,16 +44,16 @@ private:
 
 int main() {
 	int n, m; 
-	cout << "ÇëÊäÈëN£º";
+	cout << "è¯·è¾“å…¥Nï¼š";
 	cin >> n;
-	cout << "ÇëÊäÈëM£º";
+	cout << "è¯·è¾“å…¥Mï¼š";
 	cin >> m;
 	CalculateWays cw;
 	while (n > 0 || m > 0) {
-		cout << "½á¹ûÊÇ£º" << cw.get_result(n, m) << endl;
-		cout << "ÇëÊäÈëN£º";
+		cout << "ç»“æœæ˜¯ï¼š" << cw.get_result(n, m) << endl;
+		cout << "è¯·è¾“å…¥Nï¼š";
 		cin >> n;
-		cout << "ÇëÊäÈëM£º";
+		cout << "è¯·è¾“å…¥Mï¼š";
 		cin >> m;
 	}
 	return 0;

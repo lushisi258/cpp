@@ -2,42 +2,42 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <iomanip> // ÓÃÓÚ¸ñÊ½»¯Êä³öµÄÍ·ÎÄ¼ş
-#include <winsock2.h> // Windows ÌØ¶¨µÄÍ·ÎÄ¼ş
-#include <ws2tcpip.h> // Windows ÌØ¶¨µÄÍ·ÎÄ¼ş
+#include <iomanip> // ç”¨äºæ ¼å¼åŒ–è¾“å‡ºçš„å¤´æ–‡ä»¶
+#include <winsock2.h> // Windows ç‰¹å®šçš„å¤´æ–‡ä»¶
+#include <ws2tcpip.h> // Windows ç‰¹å®šçš„å¤´æ–‡ä»¶
 
-#pragma comment(lib, "ws2_32.lib") // Á´½Ó Winsock ¿â
+#pragma comment(lib, "ws2_32.lib") // é“¾æ¥ Winsock åº“
 
-#pragma pack(1)        // ½øÈë×Ö½Ú¶ÔÆë·½Ê½
+#pragma pack(1)        // è¿›å…¥å­—èŠ‚å¯¹é½æ–¹å¼
 
-// Ö¡Ê×²¿½á¹¹
+// å¸§é¦–éƒ¨ç»“æ„
 typedef struct FrameHeader_t {
-    u_char DesMAC[6];  // Ä¿µÄµØÖ·
-    u_char SrcMAC[6];  // Ô´µØÖ·
-    u_short FrameType; // Ö¡ÀàĞÍ
+    u_char DesMAC[6];  // ç›®çš„åœ°å€
+    u_char SrcMAC[6];  // æºåœ°å€
+    u_short FrameType; // å¸§ç±»å‹
 } FrameHeader_t;
 
-// IPÊ×²¿½á¹¹
+// IPé¦–éƒ¨ç»“æ„
 typedef struct IPHeader_t {
-    u_char Ver_HLen;   // °æ±¾ (4 bits) + Ê×²¿³¤¶È (4 bits)
-    u_char TOS;        // ·şÎñÀàĞÍ
-    u_short TotalLen;  // ×Ü³¤¶È
-    u_short ID;        // ±êÊ¶
-    u_short Flag_Segment; // ±êÖ¾ (3 bits) + Æ¬Æ«ÒÆ (13 bits)
-    u_char TTL;        // Éú´æÊ±¼ä
-    u_char Protocol;   // Ğ­Òé
-    u_short Checksum;  // Ê×²¿Ğ£ÑéºÍ
-    u_long SrcIP;      // Ô´µØÖ·
-    u_long DstIP;      // Ä¿µÄµØÖ·
+    u_char Ver_HLen;   // ç‰ˆæœ¬ (4 bits) + é¦–éƒ¨é•¿åº¦ (4 bits)
+    u_char TOS;        // æœåŠ¡ç±»å‹
+    u_short TotalLen;  // æ€»é•¿åº¦
+    u_short ID;        // æ ‡è¯†
+    u_short Flag_Segment; // æ ‡å¿— (3 bits) + ç‰‡åç§» (13 bits)
+    u_char TTL;        // ç”Ÿå­˜æ—¶é—´
+    u_char Protocol;   // åè®®
+    u_short Checksum;  // é¦–éƒ¨æ ¡éªŒå’Œ
+    u_long SrcIP;      // æºåœ°å€
+    u_long DstIP;      // ç›®çš„åœ°å€
 } IPHeader_t;
 
-// °üº¬Ö¡Ê×²¿ºÍIPÊ×²¿µÄÊı¾İ°ü½á¹¹
+// åŒ…å«å¸§é¦–éƒ¨å’ŒIPé¦–éƒ¨çš„æ•°æ®åŒ…ç»“æ„
 typedef struct Data_t {
     FrameHeader_t FrameHeader;
     IPHeader_t IPHeader;
 } Data_t;
 
-// »Ö¸´Ä¬ÈÏ¶ÔÆë·½Ê½
+// æ¢å¤é»˜è®¤å¯¹é½æ–¹å¼
 #pragma pack()
 
 class PacketCapturer {
@@ -53,17 +53,17 @@ class PacketCapturer {
         }
     }
 
-    // Ñ¡ÔñÉè±¸
+    // é€‰æ‹©è®¾å¤‡
 	bool selectDevice() {   
         char errbuf[PCAP_ERRBUF_SIZE];
 
-        // ²éÕÒËùÓĞ¿ÉÓÃµÄÍøÂçÉè±¸
+        // æŸ¥æ‰¾æ‰€æœ‰å¯ç”¨çš„ç½‘ç»œè®¾å¤‡
         if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-            std::cerr << "pacp²éÕÒÉè±¸³öÏÖ´íÎó: " << errbuf << std::endl;
+            std::cerr << "pacpæŸ¥æ‰¾è®¾å¤‡å‡ºç°é”™è¯¯: " << errbuf << std::endl;
             return false;
         }
 
-        // ÁĞ³öËùÓĞÉè±¸
+        // åˆ—å‡ºæ‰€æœ‰è®¾å¤‡
         int i = 0;
         for (device = alldevs; device != nullptr; device = device->next) {
             std::cout << ++i << ": " << device->name;
@@ -75,52 +75,52 @@ class PacketCapturer {
         }
 
         if (i == 0) {
-            std::cerr << "Ã»ÓĞÕÒµ½Éè±¸" << std::endl;
+            std::cerr << "æ²¡æœ‰æ‰¾åˆ°è®¾å¤‡" << std::endl;
             return false;
         }
 
-        // ÈÃÓÃ»§Ñ¡ÔñÒ»¸öÉè±¸
+        // è®©ç”¨æˆ·é€‰æ‹©ä¸€ä¸ªè®¾å¤‡
         int choice;
-        std::cout << "ÊäÈëÄãÒªÑ¡ÔñµÄÉè±¸µÄÊı×Ö±àºÅ: ";
+        std::cout << "è¾“å…¥ä½ è¦é€‰æ‹©çš„è®¾å¤‡çš„æ•°å­—ç¼–å·: ";
         std::cin >> choice;
 
         if (choice < 1 || choice > i) {
-            std::cerr << "ÎŞĞ§Ñ¡Ôñ" << std::endl;
+            std::cerr << "æ— æ•ˆé€‰æ‹©" << std::endl;
             return false;
         }
 
-        // Ñ¡ÔñÓÃ»§Ö¸¶¨µÄÉè±¸
+        // é€‰æ‹©ç”¨æˆ·æŒ‡å®šçš„è®¾å¤‡
         device = alldevs;
         for (int index = 1; index < choice; ++index) {
             device = device->next;
         }
 
         if (device != nullptr) {
-            std::cout << "Ê¹ÓÃµÄÉè±¸ÊÇ: " << device->name << std::endl;
+            std::cout << "ä½¿ç”¨çš„è®¾å¤‡æ˜¯: " << device->name << std::endl;
             return true;
         }
         else {
-            std::cerr << "Éè±¸Ö¸ÕëÎª¿Õ¡£" << std::endl;
+            std::cerr << "è®¾å¤‡æŒ‡é’ˆä¸ºç©ºã€‚" << std::endl;
             return false;
         }
     }
 
-    // ²¶»ñÊı¾İ°ü
+    // æ•è·æ•°æ®åŒ…
     bool capturePackets(int packet_count = -1) {
         char errbuf[PCAP_ERRBUF_SIZE];
 
-        // ´ò¿ªÉè±¸½øĞĞ²¶»ñ
+        // æ‰“å¼€è®¾å¤‡è¿›è¡Œæ•è·
         handle = pcap_open_live(device->name, BUFSIZ, 1, 1000, errbuf);
         if (handle == nullptr) {
-            std::cerr << "ÎŞ·¨´ò¿ªÉè±¸ " << device->name << ": "
+            std::cerr << "æ— æ³•æ‰“å¼€è®¾å¤‡ " << device->name << ": "
                       << errbuf << std::endl;
             return false;
         }
 
-        // ²¶»ñÊı¾İ°ü
+        // æ•è·æ•°æ®åŒ…
         if (pcap_loop(handle, packet_count, packetHandler,
                       reinterpret_cast<u_char *>(this)) < 0) {
-            std::cerr << "pcap_loop³öÏÖ´íÎó: " << pcap_geterr(handle)
+            std::cerr << "pcap_loopå‡ºç°é”™è¯¯: " << pcap_geterr(handle)
                       << std::endl;
             return false;
         }
@@ -128,42 +128,42 @@ class PacketCapturer {
         return true;
     }
 
-    // ·ÖÎöÊı¾İ°ü
+    // åˆ†ææ•°æ®åŒ…
     void analyzePacket(const struct pcap_pkthdr* header, const u_char* packet) {
-        // ½âÎöÖ¡Ê×²¿
+        // è§£æå¸§é¦–éƒ¨
         FrameHeader_t* frame_header = (FrameHeader_t*)packet;
 
-        // ¼ì²éÖ¡ÀàĞÍÊÇ·ñÎªIP
+        // æ£€æŸ¥å¸§ç±»å‹æ˜¯å¦ä¸ºIP
         if (ntohs(frame_header->FrameType) == 0x0800) {
-            // ½âÎöIPÍ·
+            // è§£æIPå¤´
             IPHeader_t* ip_header = (IPHeader_t*)(packet + sizeof(FrameHeader_t));
 
-            // »ñÈ¡Ô´µØÖ·ºÍÄ¿±êµØÖ·
+            // è·å–æºåœ°å€å’Œç›®æ ‡åœ°å€
             char src_ip[INET_ADDRSTRLEN];
             char dst_ip[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &(ip_header->SrcIP), src_ip, INET_ADDRSTRLEN);
             inet_ntop(AF_INET, &(ip_header->DstIP), dst_ip, INET_ADDRSTRLEN);
 
-            // Êä³öÔ´µØÖ·ºÍÄ¿±êµØÖ·£¬Ê¹ÓÃsetwºÍleftÀ´¸ñÊ½»¯Êä³ö
-            std::cout << std::left << std::setw(20) << "Ô´IP: " << std::setw(20) << src_ip
+            // è¾“å‡ºæºåœ°å€å’Œç›®æ ‡åœ°å€ï¼Œä½¿ç”¨setwå’Œleftæ¥æ ¼å¼åŒ–è¾“å‡º
+            std::cout << std::left << std::setw(20) << "æºIP: " << std::setw(20) << src_ip
                 << " | "
-                << std::left << std::setw(20) << "Ä¿±êIP: " << std::setw(20) << dst_ip
+                << std::left << std::setw(20) << "ç›®æ ‡IP: " << std::setw(20) << dst_ip
                 << std::endl;
         }
     }
 
   private:
-	  // Êı¾İ°ü´¦Àí
+	  // æ•°æ®åŒ…å¤„ç†
     static void packetHandler(u_char *user, const struct pcap_pkthdr *header,
                               const u_char *packet) {
         PacketCapturer *capturer = reinterpret_cast<PacketCapturer *>(user);
         capturer->analyzePacket(header, packet);
     }
 
-	pcap_t* handle; // ÓÃÓÚ²¶»ñÊı¾İ°üµÄ¾ä±ú
-	pcap_if_t* alldevs; // Éè±¸ÁĞ±í
-	pcap_if_t* device; // Ñ¡ÔñµÄÉè±¸
-	std::vector<std::string> device_names; // Éè±¸Ãû³ÆÁĞ±í
+	pcap_t* handle; // ç”¨äºæ•è·æ•°æ®åŒ…çš„å¥æŸ„
+	pcap_if_t* alldevs; // è®¾å¤‡åˆ—è¡¨
+	pcap_if_t* device; // é€‰æ‹©çš„è®¾å¤‡
+	std::vector<std::string> device_names; // è®¾å¤‡åç§°åˆ—è¡¨
 };
 
 int main() {

@@ -12,38 +12,38 @@ public:
 	vector<int> nodesStatus;
 	vector<vector<int>> graph;
 
-	// ¹¹Ôìº¯Êı
+	// æ„é€ å‡½æ•°
 	NKProblem(vector<vector<int>> matrix) {
-		dataSize = matrix.size(); // ³õÊ¼»¯dataSize
-		nodesStatus.resize(dataSize); // ³õÊ¼»¯nodesStatus
+		dataSize = matrix.size(); // åˆå§‹åŒ–dataSize
+		nodesStatus.resize(dataSize); // åˆå§‹åŒ–nodesStatus
 		nodesStatus[0] = 2;
-		// faultyNodes ºÍ nodesStatus Ä¬ÈÏ³õÊ¼»¯Îª¿Õvector
-		graph = matrix; // ³õÊ¼»¯graphÎª´«ÈëµÄmatrix
+		// faultyNodes å’Œ nodesStatus é»˜è®¤åˆå§‹åŒ–ä¸ºç©ºvector
+		graph = matrix; // åˆå§‹åŒ–graphä¸ºä¼ å…¥çš„matrix
 	}
 	void solution() {
 		queue<int> q;
-		q.push(0); // ½«0ºÅ½ÚµãÈë¶Ó
+		q.push(0); // å°†0å·èŠ‚ç‚¹å…¥é˜Ÿ
 		while (!q.empty()) {
-			// È¡³ö¶ÓÊ×ÔªËØ
+			// å–å‡ºé˜Ÿé¦–å…ƒç´ 
 			int f = q.front();
 			q.pop();
-			// ±éÀúf½ÚµãµÄËùÓĞÁÚ½Ó½Úµã
+			// éå†fèŠ‚ç‚¹çš„æ‰€æœ‰é‚»æ¥èŠ‚ç‚¹
 			for (int i = 0; i < dataSize; ++i) {
 				if (graph[f][i] == 0) {
 					continue;
 				}
-				// Èç¹ûfºÍiÖ®¼äÓĞÁ¬½Ó£¬ÅĞ¶ÏiµÄ×´Ì¬
-				// Èç¹ûiµÄ×´Ì¬Îª0£¬ËµÃ÷iÎ´±»·ÃÎÊ¹ı
+				// å¦‚æœfå’Œiä¹‹é—´æœ‰è¿æ¥ï¼Œåˆ¤æ–­içš„çŠ¶æ€
+				// å¦‚æœiçš„çŠ¶æ€ä¸º0ï¼Œè¯´æ˜iæœªè¢«è®¿é—®è¿‡
 				else if(nodesStatus[i] == 0) {
-					// Èç¹ûÁ¬½ÓÎª-1µÄ»°£¬ÄÇÃ´iµÄÑÕÉ«ºÍfµÄÑÕÉ«Ïà·´
+					// å¦‚æœè¿æ¥ä¸º-1çš„è¯ï¼Œé‚£ä¹ˆiçš„é¢œè‰²å’Œfçš„é¢œè‰²ç›¸å
 					if (graph[f][i] == -1) {
 						nodesStatus[i] = 0 - nodesStatus[f];
 					}
-					// Èç¹ûÁ¬½ÓÎª1µÄ»°£¬ÄÇÃ´iµÄÑÕÉ«ºÍfµÄÑÕÉ«ÏàÍ¬
+					// å¦‚æœè¿æ¥ä¸º1çš„è¯ï¼Œé‚£ä¹ˆiçš„é¢œè‰²å’Œfçš„é¢œè‰²ç›¸åŒ
 					else if (graph[f][i] == 1) {
 						nodesStatus[i] = nodesStatus[f];
 					}
-					q.push(i); // ½«iÈë¶Ó
+					q.push(i); // å°†iå…¥é˜Ÿ
 				}
 			}
 		}
@@ -64,31 +64,31 @@ int main() {
 	ifstream file("matrix.csv");
 	string line;
 	vector<vector<int>> matrix;
-	vector<int> firstRow; // ÓÃÓÚ´æ´¢µÚÒ»ĞĞµÄÊı¾İ
-	bool firstLine = true; // ÓÃÓÚÅĞ¶ÏÊÇ·ñÊÇµÚÒ»ĞĞ
+	vector<int> firstRow; // ç”¨äºå­˜å‚¨ç¬¬ä¸€è¡Œçš„æ•°æ®
+	bool firstLine = true; // ç”¨äºåˆ¤æ–­æ˜¯å¦æ˜¯ç¬¬ä¸€è¡Œ
 
 	while (getline(file, line)) {
-		if (firstLine) { // Èç¹ûÊÇµÚÒ»ĞĞ
+		if (firstLine) { // å¦‚æœæ˜¯ç¬¬ä¸€è¡Œ
 			stringstream ss(line);
 			string num;
-			getline(ss, num, ','); // Ê×ÏÈ¶ÁÈ¡²¢¶ªÆúµÚÒ»¸ö¿ÕÊı¾İ
+			getline(ss, num, ','); // é¦–å…ˆè¯»å–å¹¶ä¸¢å¼ƒç¬¬ä¸€ä¸ªç©ºæ•°æ®
 			while (getline(ss, num, ',')) {
-				firstRow.push_back(stoi(num)); // ½«µÚÒ»ĞĞµÄÊı¾İ´æ´¢µ½firstRowÊı×éÖĞ
+				firstRow.push_back(stoi(num)); // å°†ç¬¬ä¸€è¡Œçš„æ•°æ®å­˜å‚¨åˆ°firstRowæ•°ç»„ä¸­
 			}
-			firstLine = false; // ¸üĞÂ±êÖ¾£¬±íÊ¾µÚÒ»ĞĞÒÑ¾­´¦Àí
+			firstLine = false; // æ›´æ–°æ ‡å¿—ï¼Œè¡¨ç¤ºç¬¬ä¸€è¡Œå·²ç»å¤„ç†
 			continue;
 		}
 
 		vector<int> row;
 		stringstream ss(line);
 		string num;
-		int columnIndex = 0; // ÓÃÓÚÌø¹ıÃ¿ĞĞµÄµÚÒ»¸öÊı¾İ
+		int columnIndex = 0; // ç”¨äºè·³è¿‡æ¯è¡Œçš„ç¬¬ä¸€ä¸ªæ•°æ®
 
 		while (getline(ss, num, ',')) {
-			if (columnIndex != 0) { // Èç¹û²»ÊÇÃ¿ĞĞµÄµÚÒ»¸öÊı¾İ
+			if (columnIndex != 0) { // å¦‚æœä¸æ˜¯æ¯è¡Œçš„ç¬¬ä¸€ä¸ªæ•°æ®
 				row.push_back(std::stoi(num));
 			}
-			columnIndex++; // ¸üĞÂÁĞË÷Òı
+			columnIndex++; // æ›´æ–°åˆ—ç´¢å¼•
 		}
 		matrix.push_back(row);
 	}

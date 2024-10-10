@@ -35,23 +35,23 @@ public:
 
 class Kruskal {
 private:
-    vector<Edge> edges;         // ´æ´¢±ß
-	int result = 0;             // ×îĞ¡Éú³ÉÊ÷µÄÈ¨ÖØµÄºÍ
+    vector<Edge> edges;         // å­˜å‚¨è¾¹
+	int result = 0;             // æœ€å°ç”Ÿæˆæ ‘çš„æƒé‡çš„å’Œ
     int n;
 public:
     Kruskal(int n, const vector<Edge>& edges) : n(n), edges(edges) {}
 
     void run() {
-        // Ê×ÏÈ¶Ô±ß°´È¨ÖØ½øĞĞÅÅĞò
+        // é¦–å…ˆå¯¹è¾¹æŒ‰æƒé‡è¿›è¡Œæ’åº
         sort(edges.begin(), edges.end(), [](const Edge& a, const Edge& b) {
             return a.w < b.w;
             });
 
-        // ³õÊ¼»¯²¢²é¼¯ºÍ½á¹û¼¯
+        // åˆå§‹åŒ–å¹¶æŸ¥é›†å’Œç»“æœé›†
         UnionFind uf(n);
         vector<Edge> res;
 
-        // ±éÀúËùÓĞ±ß£¬Èç¹ûÁ½¸ö¶¥µã²»ÔÚÍ¬Ò»¸ö¼¯ºÏÖĞ£¬ÔòºÏ²¢Á½¸ö¼¯ºÏ²¢½«±ß¼ÓÈë½á¹û¼¯
+        // éå†æ‰€æœ‰è¾¹ï¼Œå¦‚æœä¸¤ä¸ªé¡¶ç‚¹ä¸åœ¨åŒä¸€ä¸ªé›†åˆä¸­ï¼Œåˆ™åˆå¹¶ä¸¤ä¸ªé›†åˆå¹¶å°†è¾¹åŠ å…¥ç»“æœé›†
         for (const auto& e : edges) {
             if (uf.find(e.u) != uf.find(e.v)) {
                 uf.unionSet(e.u, e.v);
@@ -67,17 +67,17 @@ public:
 
 class Prim {
 private:
-    vector<Edge> edges;         // ´æ´¢±ß
+    vector<Edge> edges;         // å­˜å‚¨è¾¹
     int n;
-    vector<Edge> res;           // ´æ´¢½á¹û
-	int result = 0;             // ×îĞ¡Éú³ÉÊ÷µÄÈ¨ÖØµÄºÍ
+    vector<Edge> res;           // å­˜å‚¨ç»“æœ
+	int result = 0;             // æœ€å°ç”Ÿæˆæ ‘çš„æƒé‡çš„å’Œ
 public:
     Prim(int n, const vector<Edge>& edges) : n(n), edges(edges) {}
 
     void run() {
-        // Ê×ÏÈ¹¹½¨ÁÚ½Ó¾ØÕó´æ´¢Í¼
+        // é¦–å…ˆæ„å»ºé‚»æ¥çŸ©é˜µå­˜å‚¨å›¾
         vector<vector<int>> matrix(n, vector<int>(n, INT_MAX));
-		// Ö»´æ´¢×î¶ÌµÄ±ß
+		// åªå­˜å‚¨æœ€çŸ­çš„è¾¹
         for (const auto& e : edges) {
 			if (e.w < matrix[e.u][e.v]) {
 				matrix[e.u][e.v] = e.w;
@@ -85,18 +85,18 @@ public:
 			}
         }
 
-        // ³õÊ¼»¯visitedÊı×é£¬visitedÊı×éÓÃÓÚ±ê¼Ç¶¥µãÊÇ·ñÒÑ¾­¼ÓÈë×îĞ¡Éú³ÉÊ÷
+        // åˆå§‹åŒ–visitedæ•°ç»„ï¼Œvisitedæ•°ç»„ç”¨äºæ ‡è®°é¡¶ç‚¹æ˜¯å¦å·²ç»åŠ å…¥æœ€å°ç”Ÿæˆæ ‘
         vector<bool> visited(n, false);
-        // minWeightÊı×éÓÃÓÚ´æ´¢µ±Ç°¶¥µãµ½×îĞ¡Éú³ÉÊ÷µÄ×îĞ¡±ß
+        // minWeightæ•°ç»„ç”¨äºå­˜å‚¨å½“å‰é¡¶ç‚¹åˆ°æœ€å°ç”Ÿæˆæ ‘çš„æœ€å°è¾¹
         vector<int> minWeight(n, INT_MAX);
-        // parentÊı×éÓÃÓÚ´æ´¢µ±Ç°¶¥µãµÄ¸¸½Úµã£¬¼´ÓÃÀ´ÅĞ¶Ïµ±Ç°½ÚµãÊÇ·ñ¿ÉÒÔÁ¬½Óµ½×îĞ¡Éú³ÉÊ÷
+        // parentæ•°ç»„ç”¨äºå­˜å‚¨å½“å‰é¡¶ç‚¹çš„çˆ¶èŠ‚ç‚¹ï¼Œå³ç”¨æ¥åˆ¤æ–­å½“å‰èŠ‚ç‚¹æ˜¯å¦å¯ä»¥è¿æ¥åˆ°æœ€å°ç”Ÿæˆæ ‘
         vector<int> parent(n, -1);
         minWeight[0] = 0;
 
-        // Ñ­»·n´Î£¬Ã¿´ÎÕÒµ½Ò»¸ö¶¥µã¼ÓÈë×îĞ¡Éú³ÉÊ÷
+        // å¾ªç¯næ¬¡ï¼Œæ¯æ¬¡æ‰¾åˆ°ä¸€ä¸ªé¡¶ç‚¹åŠ å…¥æœ€å°ç”Ÿæˆæ ‘
         for (int i = 0; i < n; i++) {
             int u = -1;
-            // ÕÒµ½µ±Ç°Î´¼ÓÈë×îĞ¡Éú³ÉÊ÷µÄ¶¥µãÖĞµ½×îĞ¡Éú³ÉÊ÷¾àÀë×îĞ¡µÄ¶¥µã
+            // æ‰¾åˆ°å½“å‰æœªåŠ å…¥æœ€å°ç”Ÿæˆæ ‘çš„é¡¶ç‚¹ä¸­åˆ°æœ€å°ç”Ÿæˆæ ‘è·ç¦»æœ€å°çš„é¡¶ç‚¹
             for (int j = 0; j < n; j++) {
                 if (!visited[j] && (u == -1 || minWeight[j] < minWeight[u])) {
                     u = j;
@@ -107,12 +107,12 @@ public:
                 break;
             }
 
-            // ±ê¼Çµ±Ç°¶¥µãÒÑ¾­¼ÓÈë×îĞ¡Éú³ÉÊ÷
+            // æ ‡è®°å½“å‰é¡¶ç‚¹å·²ç»åŠ å…¥æœ€å°ç”Ÿæˆæ ‘
             visited[u] = true;
             if (parent[u] != -1) {
 				result += matrix[u][parent[u]];
             }
-            // ¸üĞÂµ±Ç°¶¥µãµ½×îĞ¡Éú³ÉÊ÷µÄ×îĞ¡±ß
+            // æ›´æ–°å½“å‰é¡¶ç‚¹åˆ°æœ€å°ç”Ÿæˆæ ‘çš„æœ€å°è¾¹
             for (int v = 0; v < n; ++v) {
                 if (!visited[v] && matrix[u][v] != INT_MAX && matrix[u][v] < minWeight[v]) {
                     minWeight[v] = matrix[u][v];
@@ -128,16 +128,16 @@ public:
 };
 
 int main() {
-    int n;      // n¸öµã
-    int m;	    // mÌõ±ß
-    int u, v, w;    // ¶¥µãu£¬¶¥µãv£¬È¨ÖØw
+    int n;      // nä¸ªç‚¹
+    int m;	    // mæ¡è¾¹
+    int u, v, w;    // é¡¶ç‚¹uï¼Œé¡¶ç‚¹vï¼Œæƒé‡w
     while (scanf("%d %d", &n, &m) != EOF) {
 		vector<Edge> edges;
         for (int i = 0; i < m; i++) {
 			scanf("%d %d %d", &u, &v, &w);
 			edges.push_back(Edge(u, v, w));
 		}
-		// Ï¡ÊèÍ¼ÓÃkruskalËã·¨£¬³íÃÜÍ¼ÓÃprimËã·¨
+		// ç¨€ç–å›¾ç”¨kruskalç®—æ³•ï¼Œç¨ å¯†å›¾ç”¨primç®—æ³•
         if (n > 5000){
 			Kruskal kruskal(n, edges);
 			kruskal.run();

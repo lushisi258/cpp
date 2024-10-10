@@ -1,11 +1,11 @@
 /*
-×îĞ¡Éú³ÉÊ÷µÄÊı¾İÉú³É£¬
-10^3¸öµã£¬5*10^5Ìõ±ß£¬±ßÈ¨1~10^3
-¸ñÊ½Îª£º
-µãÊı ±ßÊı
+æœ€å°ç”Ÿæˆæ ‘çš„æ•°æ®ç”Ÿæˆï¼Œ
+10^3ä¸ªç‚¹ï¼Œ5*10^5æ¡è¾¹ï¼Œè¾¹æƒ1~10^3
+æ ¼å¼ä¸ºï¼š
+ç‚¹æ•° è¾¹æ•°
 u1 v1 w1
 u2 v2 w2
-¡­¡­
+â€¦â€¦
 */
 #include <random>
 #include <vector>
@@ -18,20 +18,20 @@ struct edge {
 };
 
 void data(int n) {
-	int edge_num = 0;				//ÒÑ¾­Éú³ÉµÄ±ßÊı
-	random_device rd;				//Ëæ»úÊıÖÖ×Ó
-	mt19937 gen(rd());				//Ëæ»úÊıÉú³ÉÆ÷
-	uniform_int_distribution<> dis_e(1, 999);	//±ß³¤Ëæ»úÊı·Ö²¼
-	uniform_int_distribution<> dis_v(0, n-1);	//µãÊıËæ»úÊı·Ö²¼
-	vector<edge> edges;		//±ßµÄ¼¯ºÏ
-	// Ê×ÏÈ°´Ë³ĞòÉú³É1000¸öµãµÄ±ß£¬±£Ö¤Ã¿¸öµã¶¼ÓĞ±ßÏàÁ¬
+	int edge_num = 0;				//å·²ç»ç”Ÿæˆçš„è¾¹æ•°
+	random_device rd;				//éšæœºæ•°ç§å­
+	mt19937 gen(rd());				//éšæœºæ•°ç”Ÿæˆå™¨
+	uniform_int_distribution<> dis_e(1, 999);	//è¾¹é•¿éšæœºæ•°åˆ†å¸ƒ
+	uniform_int_distribution<> dis_v(0, n-1);	//ç‚¹æ•°éšæœºæ•°åˆ†å¸ƒ
+	vector<edge> edges;		//è¾¹çš„é›†åˆ
+	// é¦–å…ˆæŒ‰é¡ºåºç”Ÿæˆ1000ä¸ªç‚¹çš„è¾¹ï¼Œä¿è¯æ¯ä¸ªç‚¹éƒ½æœ‰è¾¹ç›¸è¿
 	for (int i = 0; i < n; i++) {
 		int temp_e = dis_e(gen);
 		int temp_v = dis_v(gen);
 		edges.push_back({ i, temp_v, temp_e });
 		edge_num++;
 	}
-	// Éú³ÉÊ£ÓàµÄ±ß£¬Ö±µ½±ßÊı´ïµ½500000
+	// ç”Ÿæˆå‰©ä½™çš„è¾¹ï¼Œç›´åˆ°è¾¹æ•°è¾¾åˆ°500000
 	for (; edge_num < 500000;)
 	{
 		int u = dis_v(gen);
@@ -41,7 +41,7 @@ void data(int n) {
 		edges.push_back({ u, v, w });
 		edge_num++;
 	}
-	// Êä³öµ½ÎÄ¼ş
+	// è¾“å‡ºåˆ°æ–‡ä»¶
 	ofstream out("30data.txt", ios::app);
 	out << 1000 << " " << 500000 << endl;
 	for (auto e : edges) {
