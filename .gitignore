@@ -7,8 +7,6 @@
 # 不忽略 .gitignore 文件
 !.gitignore
 
-# 不忽略所有 .cpp 文件
+# 不忽略所有 .cpp 和 .h 文件
+!**/*.h
 !**/*.cpp
-
-# 不忽略所有 Makefile 文件
-!**/Makefile
