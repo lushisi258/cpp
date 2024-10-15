@@ -7,6 +7,8 @@
 # 不忽略 .gitignore 文件
 !.gitignore
 
-# 不忽略所有 .cpp 和 .h 文件
+# 不忽略的文件
 !**/*.h
 !**/*.cpp
+!**/*.md
+!**/*.png
