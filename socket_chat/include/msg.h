@@ -14,6 +14,9 @@ struct Message {
 // 解析消息格式 "username$$message$$timestamp"
 Message parse_msg(const std::string &input);
 
+// 设置颜色输出
+void print_color_msg(const std::string &msg, int color);
+
 // 格式化输出msg
 void print_format_msg(const Message &msg);
 

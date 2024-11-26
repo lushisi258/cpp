@@ -11,17 +11,15 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-WSADATA wsaData;
-SOCKET clientSocket;
-sockaddr_in serverAddr;
+WSADATA wsaData;               // Winsock 数据结构
+SOCKET clientSocket;           // 客户端套接字
+sockaddr_in serverAddr;        // 服务器地址
 std::condition_variable cv;    // 条件变量
 std::mutex mtx_done;           // 用于保护 done 状态
-std::mutex mtx;                // 用于保护消息列表
+std::mutex mtx_msgs;           // 用于保护消息列表
 std::vector<Message> messages; // 保存所有消息的表
-std::string username;
-bool done = false;
-long long unsigned int msg_index =
-    0; // 消息索引，用于跟踪打印位置(和vector.size()保持类型一致)
+std::string username;          // 用户名
+bool done = false;             // 客户端是否退出的标志位
 
 // 获取当前时间
 std::string get_current_time() {
@@ -34,7 +32,7 @@ std::string get_current_time() {
 }
 
 void recv_msg() {
-    while (true) {
+    while (!done) {
         char buffer[1024];
         int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesReceived == SOCKET_ERROR || bytesReceived == 0) {
@@ -47,9 +45,10 @@ void recv_msg() {
             break;
         }
         buffer[bytesReceived] = '\0';
-        Message msg = parse_msg(buffer);
+        std::string message(buffer);
+        Message msg = parse_msg(message);
         {
-            std::lock_guard<std::mutex> lock(mtx);
+            std::lock_guard<std::mutex> lock(mtx_msgs);
             messages.push_back(msg);
         }
         print_format_msg(msg);
@@ -57,7 +56,7 @@ void recv_msg() {
 }
 
 void send_msg() {
-    while (true) {
+    while (!done) {
         std::string input;
         std::getline(std::cin, input);
         if (input == "/exit" || input == "/quit" || input == "/q") {
@@ -65,6 +64,8 @@ void send_msg() {
                 std::lock_guard<std::mutex> lock(mtx_done);
                 done = true;
             }
+            // 客户端发出退出消息后，关闭套接字并通知其他线程
+            closesocket(clientSocket);
             cv.notify_all();
             break;
         } else if (!input.empty()) {
@@ -73,17 +74,18 @@ void send_msg() {
             msg.message = input;
             msg.timestamp = get_current_time();
             {
-                std::lock_guard<std::mutex> lock(mtx);
+                std::lock_guard<std::mutex> lock(mtx_msgs);
                 messages.push_back(msg);
             }
 
-            std::string fullMessage =
+            std::string string_msg =
                 username + '$' + input + '$' + msg.timestamp;
-            int totalSent = 0;
-            int toSend = fullMessage.length();
-            while (totalSent < toSend) {
-                int sent = send(clientSocket, fullMessage.c_str() + totalSent,
-                                toSend - totalSent, 0);
+            int total_sent = 0;                // 已发送的字节数
+            int to_send = string_msg.length(); // 要发送的字节数
+            while (total_sent < to_send) {
+                // 发送消息
+                int sent = send(clientSocket, string_msg.c_str() + total_sent,
+                                to_send - total_sent, 0);
                 if (sent == SOCKET_ERROR) {
                     std::cerr << "Send failed" << std::endl;
                     {
@@ -93,7 +95,7 @@ void send_msg() {
                     cv.notify_all();
                     break;
                 }
-                totalSent += sent;
+                total_sent += sent;
             }
         }
     }
@@ -118,9 +120,11 @@ int main() {
     }
 
     // 连接到服务器
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serverAddr.sin_port = htons(8888);
+    serverAddr.sin_family = AF_INET; // 设置地址族为 IPv4
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // 设置服务器IP地址
+    serverAddr.sin_port = htons(8888); // 设置服务器端口
+    // 使用 connect 函数连接到服务器
+    // 如果连接失败，关闭套接字并清理 Winsock
     if (connect(clientSocket, (sockaddr *)&serverAddr, sizeof(serverAddr)) ==
         SOCKET_ERROR) {
         std::cerr << "Connection failed" << std::endl;
@@ -128,19 +132,16 @@ int main() {
         WSACleanup();
         return 1;
     }
-
-    std::cout << "Connected to server" << std::endl;
+    // 输出连接成功消息
+    print_color_msg("Connected to server\n", 1);
 
     // 启动消息处理线程
     std::thread recv_thread(recv_msg);
     std::thread input_thread(send_msg);
-    {
-        std::unique_lock<std::mutex> lock(mtx_done);
-        cv.wait(lock, [] { return done; }); // 当done为true时，解除阻塞
-    }
 
-    // 关闭套接字
-    closesocket(clientSocket);
+    // 等待客户端退出
+    recv_thread.join();
+    input_thread.join();
     WSACleanup();
     return 0;
 }
