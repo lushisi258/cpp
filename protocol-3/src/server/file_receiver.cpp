@@ -48,9 +48,10 @@ void receive_file(SOCKET sockfd, sockaddr_in &client_addr, int addr_len, const c
             }
 
             // 收到包后发送 ACK
-            ack_packet.seq_num = expected_seq_num - 1;
+            ack_packet.seq_num = packet.seq_num;
             sendto(sockfd, (char *)&ack_packet, sizeof(ack_packet), 0, (struct sockaddr *)&client_addr, addr_len);
             std::cout << "发送ACK包" << ack_packet.seq_num << std::endl;
+
         } else {
             std::cerr << "校验和出错，包" << packet.seq_num << "丢弃" << std::endl;
         }

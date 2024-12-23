@@ -4,6 +4,9 @@
 # 不忽略目录
 !*/
 
+# 忽略目录 test
+/test/
+
 # 不忽略 .gitignore 文件
 !.gitignore
 
