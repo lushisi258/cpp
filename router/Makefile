@@ -2,7 +2,7 @@
 CXX = g++
 
 # 编译选项
-CXXFLAGS = -Wall -Wextra -std=c++11 -I"C:\Program Files\Npcap\Include" -m32
+CXXFLAGS = -Wall -Wextra -std=c++11 -I"C:\Program Files\Npcap\Include"
 
 # 链接选项
 LDFLAGS = -L"C:\Program Files\Npcap\Lib\x64" -lPacket -lwpcap -lws2_32
