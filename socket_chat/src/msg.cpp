@@ -8,17 +8,56 @@
 #include <windows.h>
 #endif
 
-// 定义颜色格式，控制输出字符颜色
+// 控制输出的颜色，0,1,2,3分别代表蓝色、绿色、红色和黄色
+void print_color_msg(const std::string &msg, int color) {
 #ifdef _WIN32
-void setConsoleColor(WORD color) {
+    // 设置颜色
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    switch (color) {
+    case 0:
+        color = FOREGROUND_BLUE;
+        break;
+    case 1:
+        color = FOREGROUND_GREEN;
+        break;
+    case 2:
+        color = FOREGROUND_RED;
+        break;
+    case 3:
+        color = FOREGROUND_RED | FOREGROUND_GREEN;
+        break;
+    default:
+        color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+        break;
+    }
     SetConsoleTextAttribute(hConsole, color);
-}
+    std::cout << msg;
+    // 重置颜色为白色
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN |
+                                          FOREGROUND_BLUE);
 #else
-const std::string RESET = "\033[0m";
-const std::string BLUE = "\033[34m";
-const std::string YELLOW = "\033[33m";
+    // 设置颜色
+    std::string colorCode;
+    switch (color) {
+    case 0:
+        colorCode = "\033[34m";
+        break;
+    case 1:
+        colorCode = "\033[32m";
+        break;
+    case 2:
+        colorCode = "\033[31m";
+        break;
+    case 3:
+        colorCode = "\033[33m";
+        break;
+    default:
+        colorCode = "\033[0m";
+        break;
+    }
+    std::cout << colorCode << msg << "\033[0m";
 #endif
+}
 
 // 解析消息格式 "username$message$timestamp"
 Message parse_msg(const std::string &input) {
@@ -41,25 +80,11 @@ Message parse_msg(const std::string &input) {
 
 // 格式化输出msg
 void print_format_msg(const Message &msg) {
-#ifdef _WIN32
-    // 设置用户名为蓝色
-    setConsoleColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-    std::cout << std::left << std::setw(10) << msg.username + '>';
-
-    // 重置颜色并打印消息
-    setConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-    std::cout << std::setw(40) << msg.message;
-
-    // 设置时间戳为黄色
-    setConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-    std::cout << std::right << std::setw(20) << msg.timestamp;
-
-    // 重置颜色
-    setConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-    std::cout << std::endl;
-#else
-    std::cout << std::left << BLUE << std::setw(10) << msg.username + '>'
-              << RESET << std::setw(40) << msg.message << std::right << YELLOW
-              << std::setw(20) << msg.timestamp << RESET << std::endl;
-#endif
+    std::cout << std::left;
+    std::cout << std::setw(10);
+    print_color_msg(msg.username + ": ", 0);
+    std::cout << std::setw(50);
+    std::cout << msg.message;
+    std::cout << std::setw(20);
+    print_color_msg(msg.timestamp + "\n", 3);
 }
