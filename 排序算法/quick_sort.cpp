@@ -31,8 +31,32 @@ bool isSorted(const vector<int> &nums) {
     return true;
 }
 
-// 选择排序
-void quickSortFunction(vector<int> &nums) {
+// 快速排序
+int partition(vector<int> &nums, int low, int high) {
+    int pi = nums[low];
+
+    int left = low + 1;
+    int right = high;
+
+    while (left < right) {
+        while (nums[left] <= pi)
+            left++;
+        while (nums[right] >= pi)
+            right--;
+        while (left < right)
+            swap(nums[left], nums[right]);
+    }
+    swap(nums[left], nums[low]);
+
+    return left;
+}
+
+void quickSortFunction(vector<int> &nums, int low, int high) {
+    if (low < high) {
+        int pivo_index = partition(nums, low, high);
+        partition(nums, low, pivo_index - 1);
+        partition(nums, pivo_index + 1, high);
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -51,7 +75,7 @@ int main(int argc, char *argv[]) {
     }
 
     auto start = chrono::steady_clock::now();
-    quickSortFunction(data);
+    quickSortFunction(data );
     auto end = chrono::steady_clock::now();
 
     cout << "排序耗时: "

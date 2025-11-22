@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -44,6 +45,7 @@ class BigIntArray {
                 }
             }
         }
+
         // 同号相加
         if (isNegative == right.isNegative) {
             int carry = 0;
@@ -137,7 +139,7 @@ class BigIntArray {
             }
         }
         // 移除结果尾部多余的0
-        while (result.num.back() == 0) {
+        while (result.num.size() > 0 && result.num.back() == 0) {
             result.num.pop_back();
         }
         result.length = result.num.size();
@@ -155,8 +157,44 @@ class BigIntArray {
     // 乘法重载
     BigIntArray operator*(const BigIntArray &right) {
         BigIntArray result;
+        if (length == 0 || right.length == 0) {
+            return result;
+        }
         // 确定符号
         result.isNegative = this->isNegative == right.isNegative ? false : true;
+        // 初始化结果数组
+        result.num = std::vector<int>(length + right.length, 0);
+        // this 每位数的索引
+        for (int i = 0; i < length; i++) {
+            // right 每位数的索引
+            for (int j = 0; j < right.length; j++) {
+                // 将乘积加到结果对应的位上
+                result.num[i + j] += num[i] * right.num[j];
+            }
+        }
+        // 处理进位
+        int carry = 0;
+        for (int i = 0; i < result.num.size(); i++) {
+            result.num[i] += carry;
+            carry = result.num[i] / 10;
+            result.num[i] = result.num[i] % 10;
+        }
+        // 如果还有进位，继续添加到后面
+        while (carry) {
+            result.num.push_back(carry % 10);
+            carry /= 10;
+        }
+        // 处理多余的0
+        while (result.num.size() > 0 && result.num.back() == 0) {
+            result.num.pop_back();
+        }
+        result.length = result.num.size();
+        // 如果为0，调整符号为正
+        if (result.length == 1 && result.num[0] == 0) {
+            result.isNegative = false;
+        }
+
+        return result;
     }
 
     void show() {
@@ -169,12 +207,154 @@ class BigIntArray {
     }
 };
 
-class BigIntList {};
+struct BigIntNode {
+    BigIntNode *next;
+    int value;
 
-// 自动化测试函数
+    BigIntNode() : value(0), next(nullptr) {}
+    BigIntNode(char c) : value(c - '0'), next(nullptr) {}
+    BigIntNode(int d) : value(d), next(nullptr) {}
+};
+
+class BigIntList {
+  private:
+    // 指向个位
+    BigIntNode *head;
+    int length;
+    bool isNegative;
+
+    BigIntList() : head(nullptr), length(0), isNegative(false) {}
+    BigIntList(std::string num_str) {
+        BigIntNode *cur_ptr = head;
+        // 逆序存储大数
+        if (num_str[0] == '-') {
+            isNegative = true;
+            length = num_str.size() - 1;
+            for (int i = num_str.size() - 1; i > 0; i--) { // 从后往前
+                cur_ptr->next = new BigIntNode(num_str[i] - '0');
+                cur_ptr = cur_ptr->next;
+            }
+        } else {
+            isNegative = false;
+            length = num_str.size();
+            for (int i = num_str.size() - 1; i >= 0; i--) {
+                cur_ptr->next = new BigIntNode(num_str[i] - '0');
+                cur_ptr = cur_ptr->next;
+            }
+        }
+    }
+
+    BigIntList *operator+(const BigIntList *right) {
+        // 处理特殊情况
+        if (length == 0) {
+            return right;
+        } else if (right->length == 0) {
+            return this;
+        }
+
+        int carry = 0;
+        BigIntList *result;
+        BigIntNode *self_node = head;
+        BigIntNode *right_node = right->head;
+        BigIntNode *result_node = result->head;
+
+        // 同号
+        if (isNegative == right->isNegative) {
+            result->isNegative = isNegative;
+            while (self_node != nullptr || right_node != nullptr) {
+                int curr = self_node->value + right_node->value + carry;
+                // 处理进位
+                if (curr > 9) {
+                    carry = curr / 10;
+                    curr = curr % 10;
+                } else {
+                    carry = 0;
+                }
+                // 添加进结果里
+                result_node->next = *BigIntNode(curr);
+                result->length++;
+
+                self_node = self_node->next;
+                right_node = right_node->next;
+                result_node = result_node->next;
+            }
+        }
+        // 异号
+        else {
+            // 判断绝对值大小
+            bool this_larger = true;
+            if (length != right->length) {
+                if (length > right->length) {
+                    this_larger = true;
+                    // 结果符号确定
+                    result->isNegative = isNegative;
+                } else {
+                    result->isNegative = right->isNegative;
+                    this_larger = false;
+                }
+            } else {
+                while (self_node != nullptr || right_node != nullptr) {
+                    if (self_node->value > right_node->value)
+                        this_larger = true;
+                    else
+                        this_larger = false;
+                    self_node = self_node->next;
+                    right_node = right_node->next;
+                }
+            }
+
+            self_node = head;
+            right_node = right->head;
+            result_node = result->head;
+
+            // this - right
+            if (this_larger) {
+                while (self_node != nullptr || right_node != nullptr) {
+                    int curr = self_node->value - right_node->value + carry;
+                    if (curr < 0) {
+                        carry = -1;
+                        curr += 10;
+                    } else {
+                        carry = 0;
+                    }
+
+                    result_node->next = BigIntNode(curr);
+                    result->length++;
+
+                    self_node = self_node->next;
+                    right_node = right_node->next;
+                    result_node = result_node->next;
+                }
+            }
+            // right - this
+            else {
+                while (self_node != nullptr || right_node != nullptr) {
+                    int curr = right_node->value - self_node->value + carry;
+                    if (curr < 0) {
+                        carry = -1;
+                        curr += 10;
+                    } else {
+                        carry = 0;
+                    }
+
+                    result_node->next = BigIntNode(curr);
+                    result->length++;
+
+                    self_node = self_node->next;
+                    right_node = right_node->next;
+                    result_node = result_node->next;
+                }
+            }
+        }
+        return result;
+    }
+
+    BigIntList operator-(const BigIntList *right) {}
+    BigIntList operator*(const BigIntList *right) {}
+};
+
+// 测试函数
 void runAutomatedTests() {
-    std::cout << "=== 开始自动化测试 ===" << std::endl;
-
     struct TestCase {
         std::string a;
         std::string op;
@@ -211,6 +391,21 @@ void runAutomatedTests() {
         // 大数测试
         {"123456789", "+", "987654321", "1111111110", "大数加法"},
         {"1000000000", "-", "1", "999999999", "大数减法"},
+
+        // 乘法测试 - 新增部分
+        {"2", "*", "3", "6", "基本乘法"},
+        {"0", "*", "123", "0", "零乘正数"},
+        {"123", "*", "0", "0", "正数乘零"},
+        {"-5", "*", "3", "-15", "负数乘正数"},
+        {"5", "*", "-3", "-15", "正数乘负数"},
+        {"-5", "*", "-3", "15", "负数乘负数"},
+        {"123", "*", "456", "56088", "两位数乘法"},
+        {"999", "*", "999", "998001", "三位数乘法"},
+        {"1000", "*", "1000", "1000000", "带零乘法"},
+        {"123456789", "*", "987654321", "121932631112635269", "大数乘法"},
+        {"999999999", "*", "999999999", "999999998000000001",
+         "大数乘法（进位）"},
+        {"1234", "*", "5678", "6906652", "四位数乘法"},
     };
 
     int passed = 0;
@@ -225,82 +420,48 @@ void runAutomatedTests() {
             result = num1 + num2;
         } else if (test.op == "-") {
             result = num1 - num2;
+        } else if (test.op == "*") { // 新增乘法处理
+            result = num1 * num2;
+        } else {
+            std::cout << "未知操作符: " << test.op << std::endl;
+            failed++;
+            continue;
         }
 
-        // 转换为字符串进行比较
-        std::string resultStr;
-        if (result.isNegative && !(result.length == 1 && result.num[0] == 0)) {
-            resultStr += '-';
-        }
-        for (int i = result.length - 1; i >= 0; i--) {
-            resultStr += std::to_string(result.num[i]);
-        }
+        // 使用stringstream捕获show()的输出
+        std::stringstream ss;
+        // 保存cout的缓冲区，重定向到stringstream
+        auto cout_buf = std::cout.rdbuf(ss.rdbuf());
+        // 调用show()方法，输出会被捕获到ss中
+        result.show();
+        // 恢复cout的缓冲区
+        std::cout.rdbuf(cout_buf);
+
+        // 获取捕获的字符串
+        std::string resultStr = ss.str();
 
         if (resultStr == test.expected) {
-            std::cout << "✓ PASS: " << test.description << std::endl;
-            std::cout << "   " << test.a << " " << test.op << " " << test.b
-                      << " = " << resultStr << std::endl;
             passed++;
+            std::cout << "[√] " << test.description << ": " << test.a << " "
+                      << test.op << " " << test.b << " = " << resultStr
+                      << std::endl;
         } else {
-            std::cout << "✗ FAIL: " << test.description << std::endl;
-            std::cout << "   " << test.a << " " << test.op << " " << test.b
-                      << " = " << resultStr << " (期望: " << test.expected
-                      << ")" << std::endl;
             failed++;
+            std::cout << "[×] " << test.description << ": " << test.a << " "
+                      << test.op << " " << test.b << " 预期: " << test.expected
+                      << " 实际: " << resultStr << std::endl;
         }
-        std::cout << std::endl;
     }
 
-    std::cout << "=== 测试结果 ===" << std::endl;
-    std::cout << "通过: " << passed << " / 失败: " << failed
-              << " / 总计: " << (passed + failed) << std::endl;
-    std::cout << "成功率: " << (passed * 100.0 / (passed + failed)) << "%"
-              << std::endl;
-}
-
-// 交互式测试函数
-void runInteractiveTest() {
-    std::string str1, str2, str3;
-    std::cout << "请输入表达式 (例如: 123 + 456 或 -100 - 50): ";
-    std::cin >> str1 >> str2 >> str3;
-
-    BigIntArray num1(str1);
-    BigIntArray num2(str3);
-    BigIntArray num3;
-
-    if (str2 == "+") {
-        num3 = num1 + num2;
-    } else if (str2 == "-") {
-        num3 = num1 - num2;
-    } else {
-        std::cout << "不支持的操作符: " << str2 << std::endl;
-        return;
-    }
-
-    std::cout << "计算结果: ";
-    num1.show();
-    std::cout << ' ' << str2 << ' ';
-    num2.show();
-    std::cout << " = ";
-    num3.show();
-    std::cout << std::endl;
+    // 输出测试总结
+    std::cout << "\n测试总结: " << std::endl;
+    std::cout << "总测试用例: " << testCases.size() << std::endl;
+    std::cout << "通过: " << passed << std::endl;
+    std::cout << "失败: " << failed << std::endl;
 }
 
 int main() {
-    int choice;
-    std::cout << "选择测试模式:" << std::endl;
-    std::cout << "1. 自动化测试" << std::endl;
-    std::cout << "2. 交互式测试" << std::endl;
-    std::cout << "请输入选择 (1 或 2): ";
-    std::cin >> choice;
-
-    if (choice == 1) {
-        runAutomatedTests();
-    } else if (choice == 2) {
-        runInteractiveTest();
-    } else {
-        std::cout << "无效选择!" << std::endl;
-    }
+    runAutomatedTests();
 
     return 0;
 }
