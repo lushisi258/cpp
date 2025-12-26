@@ -1,14 +1,21 @@
-#include "./include/sender.h"
+#include "util.h"
 
 class Receiver {
-    // 服务器监听套接字
-    int listen_fd;
-    // 接收到的连接的套接字
-    int conn_fd;
-    // 服务器地址
-    struct sockaddr_in server_addr;
+  private:
+    Status status = Status::LISTEN;
 
-    Receiver(std::string host = "127.0.0.1", int port = 3456);
-    int handle(int socket_fd);
+    int sockfd;            // raw socket fd
+    sockaddr_in peer_addr; // 对端（Sender）地址
+
+    uint32_t irs;     // initial receive sequence
+    uint32_t rcv_nxt; // next expected seq from peer
+    uint32_t snd_nxt; // next seq to send (ACK / data)
+
+    std::thread recv_thread;
+
+  public:
+    Receiver(uint16_t port);
+
+    int handle_packet(uint8_t *buf, ssize_t len);
     ~Receiver();
 };
