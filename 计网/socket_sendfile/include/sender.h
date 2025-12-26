@@ -18,6 +18,8 @@ class Sender {
     explicit Sender(uint16_t port);
 
     int connect(const std::string &peer_ip, uint16_t peer_port);
-    void send_file(const std::string &dir_path, const std::string &file_name);
+    int send_test();
+    int send_file(const std::string &dir_path, const std::string &file_name);
+    int show_status();
     int disconnect();
 };

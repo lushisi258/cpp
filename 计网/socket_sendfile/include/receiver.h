@@ -14,8 +14,8 @@ class Receiver {
     std::thread recv_thread;
 
   public:
-    Receiver(uint16_t port);
-
+    Receiver();
     int handle_packet(uint8_t *buf, ssize_t len);
+    int handle_data();
     ~Receiver();
 };

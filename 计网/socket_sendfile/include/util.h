@@ -8,9 +8,11 @@
 #include <vector>
 
 #define MYPROTO 222
-#define TCP_FLAG_SYN 0x0002 // SYN标志位：第1位（二进制0000 0000 0000 0010）
-#define TCP_FLAG_ACK 0x0010 // ACK标志位：第4位（二进制0000 0000 0001 0000）
-#define TCP_FLAG_FIN 0x0001 // FIN标志位：第0位（二进制0000 0000 0000 0001）
+
+#define TCP_FLAG_SYN 0x0002  // SYN标志位：第1位（二进制0000 0000 0000 0010）
+#define TCP_FLAG_ACK 0x0010  // ACK标志位：第4位（二进制0000 0000 0001 0000）
+#define TCP_FLAG_FIN 0x0001  // FIN标志位：第0位（二进制0000 0000 0000 0001）
+#define TCP_FLAG_DATA 0x0004 // DATA标志位：第2位（二进制0000 0000 0000 0100）
 
 enum class Status {
     CLOSED,
