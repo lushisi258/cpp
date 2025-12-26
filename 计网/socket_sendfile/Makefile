@@ -13,6 +13,7 @@ RECEIVER_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(RECEIVER_SRCS))
 
 SENDER_BIN    := $(BIN_DIR)/sender
 RECEIVER_BIN  := $(BIN_DIR)/receiver
+SAVED_JPG  := $(BIN_DIR)/saved.jpg
 
 all: $(SENDER_BIN) $(RECEIVER_BIN)
 
@@ -29,6 +30,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJ_DIR) $(SENDER_BIN) $(RECEIVER_BIN)
+	rm -rf $(OBJ_DIR) $(SENDER_BIN) $(RECEIVER_BIN) $(SAVED_JPG)
 
 .PHONY: all clean
