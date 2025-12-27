@@ -1,4 +1,4 @@
-#include "util.h"
+#include "../include/util.h"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -17,7 +17,7 @@ int main() {
     }
 
     // 接收后文件保存路径
-    std::string file_saved = "./saved.jpg";
+    std::string file_saved = "./bin/saved.jpg";
 
     // 监听端口号
     uint16_t port = 3456;
@@ -91,6 +91,7 @@ int main() {
             // 如果是期望的序列号，说明按序到达
             if (pkt.seq == expected) {
 
+                std::cout << "recv package " << expected << std::endl;
                 // 直接写入文件
                 fout.write(pkt.data, pkt.length);
                 expected++;
@@ -115,10 +116,21 @@ int main() {
             Packet ack{};
             ack.type = PKT_ACK;
             ack.ack = expected - 1;
+            ack.sack_mask = 0;
+
+            // 从 expected 开始，回传已经收到的数据包信息
+            for (uint32_t i = 0; i < 32; i++) {
+                uint32_t seq = expected + i;
+                if (buffer.count(seq)) {
+                    ack.sack_mask |= (1u << i);
+                }
+            }
+
             ack.checksum = calc_checksum(ack);
 
             sendto(sock, (char *)&ack, sizeof(ack), 0, (sockaddr *)&client,
                    len);
+
         }
 
         // 关闭连接
