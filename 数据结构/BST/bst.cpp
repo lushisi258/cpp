@@ -34,24 +34,14 @@ class Solution {
     }
 
     // 插入数组
-    TreeNode *insert(TreeNode *root, vector<int> nums) {
-        // 排序数组
+    vector<int> insert(TreeNode *root, vector<int> nums) {
+        // 排序插入数组
         sort(nums.begin(), nums.end());
-        // 调整插入序列
-        vector<int> balancedOrder;
-        getMinHeightOrder(nums, 0, nums.size() - 1, balancedOrder);
-        // 输出插入序列
-        for (int val : balancedOrder) {
-            cout << val << ' ';
-        }
-        cout << endl;
-
-        // 执行插入操作
-        for (int val : balancedOrder) {
-            root = insert(root, val); // 调用单值插入函数
-        }
-
-        return root;
+        // 存储排序结果
+        vector<int> order;
+        // 插入
+        root = insert(root, nums, 0, nums.size() - 1, order);
+        return order;
     }
 
   private:
@@ -74,74 +64,104 @@ class Solution {
         return root;
     }
 
-    // 二分提取调整次序
-    void getMinHeightOrder(const vector<int> &nums, int left, int right,
-                           vector<int> &order) {
-        if (left > right)
-            return;
-        int mid = left + (right - left) / 2;
+    TreeNode *insert(TreeNode *root, vector<int> &nums, int start, int end,
+                     vector<int> &order) {
+        if (start > end)
+            return root;
+        // 如果当前节点为空，即该数组段已经没有可以处理的子节点了，生成bst返回
+        if (!root) {
+            return buildBalanced(nums, start, end, order);
+        }
+
+        // 寻找第一个大于等于root的值的位置，在该值前的数交给左子树处理，在该值后的数交给右子树处理
+        int split = start;
+        while (split <= end && nums[split] < root->val) {
+            split++;
+        }
+
+        // 抛弃等于当前节点的值
+        int rightStart =
+            (split <= end && nums[split] == root->val) ? split + 1 : split;
+
+        // 左子树去处理前半段
+        root->left = insert(root->left, nums, start, split - 1, order);
+        // 右子树去处理后半段
+        root->right = insert(root->right, nums, rightStart, end, order);
+
+        return root;
+    }
+
+    // 将有序数组段转换为平衡二叉树插入
+    TreeNode *buildBalanced(vector<int> &nums, int s, int e,
+                            vector<int> &order) {
+        if (s > e)
+            return nullptr;
+        int mid = s + (e - s) / 2;
+        TreeNode *node = new TreeNode(nums[mid]);
         order.push_back(nums[mid]);
-        getMinHeightOrder(nums, left, mid - 1, order);
-        getMinHeightOrder(nums, mid + 1, right, order);
+        node->left = buildBalanced(nums, s, mid - 1, order);
+        node->right = buildBalanced(nums, mid + 1, e, order);
+        return node;
     }
 };
 
 // 输出树
-// 获取树的高度
-int getHeight(TreeNode *root) {
+struct NodeInfo {
+    string text;
+    int width, height;
+    vector<string> pixels;
+};
+NodeInfo get_node_info(TreeNode *root) {
     if (!root)
-        return 0;
-    return max(getHeight(root->left), getHeight(root->right)) + 1;
+        return {"", 0, 0, {}};
+
+    string val_str = to_string(root->val);
+    NodeInfo left = get_node_info(root->left);
+    NodeInfo right = get_node_info(root->right);
+
+    int val_w = (int)val_str.length();
+    int res_w, res_h, left_pos, right_pos;
+
+    // 计算当前层宽度：左子树宽 + 右子树宽 + 间距
+    int gap = 2;
+    res_w = max(val_w, (left.width ? left.width + gap : 0) +
+                           (right.width ? right.width + gap : 0));
+    res_h = max(left.height, right.height) + 2; // 2 = 节点行 + 连线行
+
+    vector<string> res(res_h, string(res_w, ' '));
+
+    // 居中放置节点值
+    int val_x = (res_w - val_w) / 2;
+    for (int i = 0; i < val_w; ++i)
+        res[0][val_x + i] = val_str[i];
+
+    // 绘制连线和合并子树
+    if (left.height > 0) {
+        int lx = (left.width - 1) / 2;
+        res[1][lx + (val_x - lx) / 2] = '/';
+        for (int i = 0; i < left.height; i++)
+            for (int j = 0; j < left.width; j++)
+                res[i + 2][j] = left.pixels[i][j];
+    }
+
+    if (right.height > 0) {
+        int rx = res_w - (right.width + 1) / 2;
+        res[1][val_x + val_w + (rx - (val_x + val_w)) / 2] = '\\';
+        for (int i = 0; i < right.height; i++)
+            for (int j = 0; j < right.width; j++)
+                res[i + 2][res_w - right.width + j] = right.pixels[i][j];
+    }
+
+    return {val_str, res_w, res_h, res};
 }
-// 将节点填充到二维数组中
-void fillArray(TreeNode *root, vector<string> &res, int row, int col,
-               int height) {
-    if (!root)
-        return;
 
-    // 放入当前节点的值
-    string s = to_string(root->val);
-    int res_col = col - s.length() / 2; // 居中对齐
-    for (int i = 0; i < s.length() && res_col + i < res[row].size(); i++) {
-        res[row][res_col + i] = s[i];
-    }
-
-    if (height == 1)
-        return;
-
-    // 计算下一层分支的跨度
-    int gap = pow(2, height - 2);
-
-    // 处理左子树
-    if (root->left) {
-        res[row + 1][col - gap / 2 - 1] = '/'; // 绘制连线
-        fillArray(root->left, res, row + 2, col - gap, height - 1);
-    }
-
-    // 处理右子树
-    if (root->right) {
-        res[row + 1][col + gap / 2 + 1] = '\\'; // 绘制连线
-        fillArray(root->right, res, row + 2, col + gap, height - 1);
-    }
-}
-// 打印树
 void printTree(TreeNode *root) {
-    int h = getHeight(root);
-    if (h == 0)
-        return;
-
-    int rows = h * 2;         // 节点行 + 连线行
-    int cols = pow(2, h + 1); // 宽度随高度指数增长
-    vector<string> res(rows, string(cols, ' '));
-
-    fillArray(root, res, 0, cols / 2, h);
-
-    for (const string &line : res) {
-        // 剪掉行尾空格
-        string trimmed = line;
-        trimmed.erase(trimmed.find_last_not_of(' ') + 1);
-        if (!trimmed.empty())
-            cout << line << endl;
+    NodeInfo info = get_node_info(root);
+    for (const string &s : info.pixels) {
+        // 剪掉行尾多余空格
+        string line = s;
+        line.erase(line.find_last_not_of(' ') + 1);
+        cout << line << endl;
     }
 }
 
@@ -155,8 +175,12 @@ int main() {
     printTree(root);
     cout << endl;
 
-    sol.insert(root, num);
+    vector<int> order = sol.insert(root, num);
     printTree(root);
+
+    for (int i : order) {
+        cout << i << ' ';
+    }
 
     return 0;
 }
