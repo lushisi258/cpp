@@ -210,17 +210,17 @@ class BigIntArray {
 };
 
 struct BigIntNode {
-    int value;
-    BigIntNode *next;
+    int value;        // 存储当前位上的数字（0-9）
+    BigIntNode *next; // 指向下一位（更高位）的指针
     BigIntNode(int v) : value(v), next(nullptr) {}
 };
 
 class BigIntList {
   private:
-    BigIntNode *head; // 指向个位（链表首部）
-    bool isNegative;
+    BigIntNode *head; // 链表头指针，始终指向个位
+    bool isNegative;  // 符号位，true表示负数
 
-    // 清空链表释放内存
+    // 遍历链表并逐个释放节点内存
     void clear() {
         while (head) {
             BigIntNode *temp = head;
@@ -229,7 +229,7 @@ class BigIntList {
         }
     }
 
-    // 复制链表辅助函数
+    // 深拷贝另一个链表，用于构造函数和赋值操作
     BigIntNode *copyList(BigIntNode *otherHead) const {
         if (!otherHead)
             return nullptr;
@@ -245,44 +245,49 @@ class BigIntList {
     }
 
   public:
+    // 默认构造函数，初始化为空
     BigIntList() : head(nullptr), isNegative(false) {}
 
-    // 析构函数：防止内存泄漏
+    // 析构函数
     ~BigIntList() { clear(); }
 
-    // 拷贝构造函数：实现深拷贝
+    // 拷贝构造函数
     BigIntList(const BigIntList &other) {
         isNegative = other.isNegative;
         head = copyList(other.head);
     }
 
-    // 赋值运算符：先释放旧内存，再深拷贝
+    // 重载赋值运算符
     BigIntList &operator=(const BigIntList &other) {
-        if (this != &other) {
-            clear();
+        if (this != &other) { // 防止自我赋值
+            clear();          // 先清空旧内容
             isNegative = other.isNegative;
             head = copyList(other.head);
         }
         return *this;
     }
 
+    // 通过字符串构造大整数
     BigIntList(std::string num_str) : head(nullptr), isNegative(false) {
         if (num_str.empty() || num_str == "0") {
-            push_back(0);
+            push_back(0); // 处理空串或零
             return;
         }
         int start = 0;
+        // 识别负号
         if (num_str[0] == '-') {
             isNegative = true;
             start = 1;
         }
-        // 逆序插入：字符串末尾是个位
+        // 逆序将字符串中的字符转换为整数存入链表
         for (int i = num_str.size() - 1; i >= start; --i) {
             push_back(num_str[i] - '0');
         }
+        // 移除前面多余的零
         cleanZeros();
     }
 
+    // 在链表末尾添加一位数字
     void push_back(int val) {
         if (!head) {
             head = new BigIntNode(val);
@@ -294,6 +299,7 @@ class BigIntList {
         }
     }
 
+    // 计算当前数字的位数
     int getLength() const {
         int len = 0;
         BigIntNode *cur = head;
@@ -304,17 +310,17 @@ class BigIntList {
         return len;
     }
 
-    // 移除高位多余的0（链表尾部的0）
+    // 移除链表末尾（高位）不必要的 0
     void cleanZeros() {
         if (!head)
             return;
-        // 先反转找零，或者递归处理。这里使用简单方法：
         std::vector<int> v;
         BigIntNode *cur = head;
         while (cur) {
             v.push_back(cur->value);
             cur = cur->next;
         }
+        // 只要长度大于1且最高位是0，就弹出
         while (v.size() > 1 && v.back() == 0)
             v.pop_back();
 
@@ -323,15 +329,16 @@ class BigIntList {
             push_back(val);
     }
 
-    // 核心加法：使用哨兵节点简化操作
+    // 重载加法运算
     BigIntList operator+(const BigIntList &right) const {
+        // 如果两个数正负号相同，执行标准的逐位相加并处理进位
         if (this->isNegative == right.isNegative) {
             BigIntList res;
             res.isNegative = this->isNegative;
-            BigIntNode dummy(0);
+            BigIntNode dummy(0); // 哨兵节点，方便链表操作
             BigIntNode *cur = &dummy;
             BigIntNode *p1 = this->head, *p2 = right.head;
-            int carry = 0;
+            int carry = 0; // 进位
 
             while (p1 || p2 || carry) {
                 int val1 = p1 ? p1->value : 0;
@@ -348,27 +355,33 @@ class BigIntList {
             res.head = dummy.next;
             return res;
         }
+        // 如果正负号不同，转换为减法：a + (-b) 等价于 a - b
         return *this - (right.negated());
     }
 
+    // 重载减法运算
     BigIntList operator-(const BigIntList &right) const {
+        // 如果符号不同，转换为加法：a - (-b) 等价于 a + b
         if (this->isNegative != right.isNegative)
             return *this + right.negated();
 
+        // 比较两者的绝对值大小
         int cmp = compareAbs(right);
         if (cmp == 0)
-            return BigIntList("0");
+            return BigIntList("0"); // 相等则结果为0
 
+        // 确定较大的数作为被减数，较小的作为减数
         const BigIntList *max = (cmp > 0) ? this : &right;
         const BigIntList *min = (cmp > 0) ? &right : this;
 
         BigIntList res;
+        // 确定结果的符号，如果左边绝对值大，结果符号同左，否则结果符号同右
         res.isNegative = (cmp > 0) ? this->isNegative : !right.isNegative;
 
         BigIntNode dummy(0);
         BigIntNode *cur = &dummy;
         BigIntNode *p1 = max->head, *p2 = min->head;
-        int borrow = 0;
+        int borrow = 0; // 借位
 
         while (p1) {
             int val1 = p1->value;
@@ -390,19 +403,25 @@ class BigIntList {
         return res;
     }
 
+    // 重载乘法运算
     BigIntList operator*(const BigIntList &right) const {
+        // 如果其中一个是0，结果直接为0
         if (isZero() || right.isZero())
             return BigIntList("0");
+
         BigIntList res("0");
         BigIntNode *p2 = right.head;
-        int shift = 0;
+        int shift = 0; // 记录当前位是第几位
 
         while (p2) {
             BigIntList temp;
+            // 先补上错位的0
             for (int i = 0; i < shift; ++i)
                 temp.push_back(0);
+
             int carry = 0;
             BigIntNode *p1 = this->head;
+            // 用 right 的当前位去乘以 this 的每一位
             while (p1 || carry) {
                 int mul = (p1 ? p1->value : 0) * p2->value + carry;
                 temp.push_back(mul % 10);
@@ -410,32 +429,40 @@ class BigIntList {
                 if (p1)
                     p1 = p1->next;
             }
+            // 将当前位的乘积累加到最终结果中
             res = res + temp;
             p2 = p2->next;
             shift++;
         }
+        // 异号得负，同号得正
         res.isNegative = (this->isNegative != right.isNegative);
         return res;
     }
 
+    // 取负值
     BigIntList negated() const {
         BigIntList copy(*this);
         copy.isNegative = !this->isNegative;
         return copy;
     }
 
+    // 比较两个大整数的绝对值大小
     int compareAbs(const BigIntList &right) const {
         int l1 = getLength(), l2 = right.getLength();
         if (l1 != l2)
             return l1 > l2 ? 1 : -1;
+
+        // 长度相同时，通过转字符串来方便地按位比较
         std::string s1 = toAbsString(), s2 = right.toAbsString();
         if (s1 == s2)
             return 0;
         return s1 > s2 ? 1 : -1;
     }
 
+    // 判断当前数值是否为 0
     bool isZero() const { return !head || (head->value == 0 && !head->next); }
 
+    // 将链表存储的数字还原为用于显示的字符串形式
     std::string toAbsString() const {
         std::string s = "";
         BigIntNode *cur = head;
@@ -443,10 +470,12 @@ class BigIntList {
             s += std::to_string(cur->value);
             cur = cur->next;
         }
+        // 链表是个位在前，转回字符串需要反转
         std::reverse(s.begin(), s.end());
         return s.empty() ? "0" : s;
     }
 
+    // 打印大整数
     void show() const {
         if (isNegative && !isZero())
             std::cout << "-";
@@ -454,84 +483,20 @@ class BigIntList {
     }
 };
 
-// 测试函数
-void runAutomatedTests() {
-    struct TestCase {
-        std::string a;
-        std::string op;
-        std::string b;
-        std::string expected;
-        std::string description;
-    };
-
-    std::vector<TestCase> testCases = {
-        {"123", "+", "456", "579", "基础加法"},
-        {"1000", "-", "1", "999", "基础减法"},
-        {"-123", "+", "456", "333", "异号加法"},
-        {"123", "*", "456", "56088", "基础乘法"},
-        {"999", "*", "999", "998001", "进位乘法"},
-        {"123456789", "*", "987654321", "121932631112635269", "大数乘法"}};
-
-    int arrayPassed = 0, listPassed = 0;
-
-    std::cout << std::left << std::setw(20) << "测试描述" << std::setw(10)
-              << "数组版" << std::setw(10) << "链表版" << std::endl;
-    std::cout << std::string(45, '-') << std::endl;
-
-    for (const auto &test : testCases) {
-        // --- 测试 Array 实现 ---
-        BigIntArray aArr(test.a), bArr(test.b), resArr;
-        if (test.op == "+")
-            resArr = aArr + bArr;
-        else if (test.op == "-")
-            resArr = aArr - bArr;
-        else if (test.op == "*")
-            resArr = aArr * bArr;
-
-        std::stringstream ssArr;
-        auto old_buf = std::cout.rdbuf(ssArr.rdbuf());
-        resArr.show();
-        std::cout.rdbuf(old_buf);
-        bool arrayOk = (ssArr.str() == test.expected);
-        if (arrayOk)
-            arrayPassed++;
-
-        // --- 测试 List 实现 ---
-        BigIntList aList(test.a), bList(test.b), resList;
-        if (test.op == "+")
-            resList = aList + bList;
-        else if (test.op == "-")
-            resList = aList - bList;
-        else if (test.op == "*")
-            resList = aList * bList;
-
-        std::stringstream ssList;
-        old_buf = std::cout.rdbuf(ssList.rdbuf());
-        resList.show();
-        std::cout.rdbuf(old_buf);
-        bool listOk = (ssList.str() == test.expected);
-        if (listOk)
-            listPassed++;
-
-        // --- 输出对比结果 ---
-        std::cout << std::left << std::setw(20) << test.description
-                  << std::setw(10) << (arrayOk ? "[√]" : "[×]") << std::setw(10)
-                  << (listOk ? "[√]" : "[×]") << std::endl;
-
-        std::cout << "   -> 预期: " << test.expected << std::endl;
-        std::cout << "   -> 数组实际: " << ssArr.str() << std::endl;
-        std::cout << "   -> 链表实际: " << ssList.str() << std::endl;
-    }
-
-    std::cout << "\n================================" << std::endl;
-    std::cout << "测试总结:" << std::endl;
-    std::cout << "数组版通过: " << arrayPassed << "/" << testCases.size()
-              << std::endl;
-    std::cout << "链表版通过: " << listPassed << "/" << testCases.size()
-              << std::endl;
-}
 int main() {
-    runAutomatedTests();
+    // BigIntArray
+    BigIntArray a = BigIntArray("5678");
+    BigIntArray b = BigIntArray("0");
+    BigIntArray c = a * b;
+    c.show();
+
+    std::cout << std::endl;
+
+    // BigIntList
+    BigIntList d("5678");
+    BigIntList e("-1");
+    BigIntList f = d * e;
+    f.show();
 
     return 0;
 }
