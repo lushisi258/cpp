@@ -166,7 +166,7 @@ int isValidParentheses(std::string s) {
         } else {
             if (currentSegment.size() > 1) {
                 // 遇到不匹配的，如果当前字符段长度大于1，输出之前的片段
-                std::cout << currentSegment;
+                std::cout << currentSegment << std::endl;
             }
             // 清空字符段
             currentSegment.clear();
@@ -183,7 +183,7 @@ int isValidParentheses(std::string s) {
 }
 
 int main() {
-    std::string s = "()()()()";
+    std::string s = "(){}))){()})))";
     isValidParentheses(s);
 
     s = "([{";
@@ -193,6 +193,9 @@ int main() {
     isValidParentheses(s);
 
     s = "([{())]}";
+    isValidParentheses(s);
+
+    s = "[]]]][{}]";
     isValidParentheses(s);
 
     return 0;

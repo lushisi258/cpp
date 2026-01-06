@@ -485,18 +485,24 @@ class BigIntList {
 
 int main() {
     // BigIntArray
-    BigIntArray a = BigIntArray("5678");
-    BigIntArray b = BigIntArray("0");
-    BigIntArray c = a * b;
+    BigIntArray a = BigIntArray("12345");
+    BigIntArray b = BigIntArray("12300");
+    BigIntArray c = a - b;
     c.show();
 
     std::cout << std::endl;
 
     // BigIntList
-    BigIntList d("5678");
-    BigIntList e("-1");
-    BigIntList f = d * e;
+    BigIntList d("12345");
+    BigIntList e("-54321");
+    BigIntList f = d - e;
     f.show();
+    
+        // BigIntList
+    BigIntList g("12345");
+    BigIntList h("-54321");
+    BigIntList i = g * h;
+    i.show();
 
     return 0;
 }

@@ -37,7 +37,6 @@ class Solution {
     TreeNode *insert(TreeNode *root, vector<int> nums) {
         // 排序数组
         sort(nums.begin(), nums.end());
-
         // 调整插入序列
         vector<int> balancedOrder;
         getMinHeightOrder(nums, 0, nums.size() - 1, balancedOrder);
@@ -148,8 +147,8 @@ void printTree(TreeNode *root) {
 
 int main() {
     Solution sol;
-    vector<int> preorder = {8, 5, 1, 7, 12, 15};
-    vector<int> num = {16, 17, 18};
+    vector<int> preorder = {12, 2, 1, 27, 13, 14};
+    vector<int> num = {0, 15, 16, 17, 18, 19, 28, 29, 30, 31, 32};
 
     TreeNode *root = sol.bst(preorder);
 

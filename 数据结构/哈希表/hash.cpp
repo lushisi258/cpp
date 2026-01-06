@@ -1,18 +1,19 @@
 #include <algorithm>
 #include <iostream>
 #include <list>
+#include <map>
 #include <set>
 #include <vector>
 
 class HashTable {
   private:
-    // 使用vector存储桶，每个桶是一个list
+    // 使用vector存储桶，每个桶是一个list双向链表
     // 存储pair<int, int>，即<key, value>
     std::vector<std::list<std::pair<int, int>>> table;
     int bucketCount;
     int size;
 
-    // 简单的哈希函数
+    // 哈希函数
     int hashFunction(int key) { return std::abs(key) % bucketCount; }
 
   public:
@@ -65,50 +66,47 @@ class HashTable {
     int getSize() const { return size; }
 };
 
-class IncreasingSubsequences {
+class UniqueSubsequences {
   public:
-    std::vector<std::vector<int>> findSubsequences(std::vector<int> &nums) {
-        std::vector<std::vector<int>> res;
+    void solve(std::vector<int> &nums) {
+        std::map<std::vector<int>, int> counts; // 记录每个子序列出现的次数
         std::vector<int> path;
-        dfs(nums, 0, path, res);
-        return res;
+
+        // dfs找出所有递增子序列
+        dfs(nums, 0, path, counts);
+
+        // 遍历结果，只打印计数为1的序列
+        for (auto const &[seq, count] : counts) {
+            if (count == 1) {
+                for (int x : seq)
+                    std::cout << x << " ";
+                std::cout << std::endl;
+            }
+        }
     }
 
   private:
-    void dfs(const std::vector<int> &nums, int startIndex,
-             std::vector<int> &path, std::vector<std::vector<int>> &res) {
+    void dfs(const std::vector<int> &nums, int index, std::vector<int> &path,
+             std::map<std::vector<int>, int> &counts) {
         if (path.size() >= 2) {
-            res.push_back(path);
+            counts[path]++; // 记录该序列出现的次数
         }
 
-        // 使用 set 对本层元素进行去重，防止生成重复组合
-        std::set<int> usedInThisLayer;
-
-        for (int i = startIndex; i < nums.size(); i++) {
-            // 不大于path最后一个元素或者在当前递归层级中nums[i]被用过，则抛弃
-            if ((!path.empty() && nums[i] <= path.back()) ||
-                (usedInThisLayer.find(nums[i]) != usedInThisLayer.end())) {
-                continue;
+        for (int i = index; i < nums.size(); ++i) {
+            // 如果path为空或者当前值大于path末尾的值（即符合单调递增），将当前值加入到path末尾
+            if (path.empty() || nums[i] > path.back()) {
+                path.push_back(nums[i]);
+                dfs(nums, i + 1, path, counts);
+                path.pop_back(); // 回溯
             }
-
-            usedInThisLayer.insert(nums[i]);
-            path.push_back(nums[i]);
-            dfs(nums, i + 1, path, res); // 递归
-            path.pop_back();             // 回溯
         }
     }
 };
 
 int main() {
-    std::vector<int> nums = {1, 2, 6, 6, 7};
-    IncreasingSubsequences solver;
-    auto result = solver.findSubsequences(nums);
+    std::vector<int> nums = {3, 5, 0, 2, 3, 4};
+    UniqueSubsequences solver;
+    solver.solve(nums);
 
-    for (const auto &seq : result) {
-        for (int x : seq)
-            std::cout << x << " ";
-        std::cout << std::endl;
-        ;
-    }
     return 0;
 }
